@@ -31,11 +31,22 @@ MODEL_PATH = Path(__file__).with_name("prendas_model.keras")
 @st.cache_resource
 def load_model():
 	try:
-		return tf.keras.models.load_model(MODEL_PATH, compile=False)
+		model = tf.keras.Sequential(
+			[
+				tf.keras.layers.Input(shape=(28, 28)),
+				tf.keras.layers.Flatten(),
+				tf.keras.layers.Dense(64, activation="relu"),
+				tf.keras.layers.Dense(32, activation="relu"),
+				tf.keras.layers.Dense(16, activation="relu"),
+				tf.keras.layers.Dense(10, activation="softmax"),
+			]
+		)
+		model.load_weights(MODEL_PATH)
+		return model
 	except (ValueError, TypeError) as error:
 		raise RuntimeError(
-			"No se pudo cargar prendas_model.keras. "
-			"Verifica que Streamlit Cloud haya reinstalado las dependencias."
+			"No se pudieron cargar los pesos de prendas_model.keras. "
+			"Verifica que el archivo del modelo esté en el repositorio."
 		) from error
 
 
@@ -92,21 +103,24 @@ if st.button("Predecir prenda", type="primary", use_container_width=True):
 	if image is None:
 		st.warning("Dibuja algo en el canvas o carga una imagen antes de predecir.")
 	else:
-		with st.spinner("Analizando la imagen..."):
-			processed_image, predicted_index, probabilities = predict(image)
+		try:
+			with st.spinner("Analizando la imagen..."):
+				processed_image, predicted_index, probabilities = predict(image)
 
-		st.success(f"Predicción: {CLASS_NAMES[predicted_index]}")
-		st.image(
-			processed_image,
-			caption="Entrada procesada a 28 x 28 píxeles",
-			width=224,
-		)
+			st.success(f"Predicción: {CLASS_NAMES[predicted_index]}")
+			st.image(
+				processed_image,
+				caption="Entrada procesada a 28 x 28 píxeles",
+				width=224,
+			)
 
-		top_indices = np.argsort(probabilities)[-3:][::-1]
-		st.subheader("Probabilidades")
-		for index in top_indices:
-			st.write(f"{CLASS_NAMES[index]}: {probabilities[index]:.1%}")
-			st.progress(float(probabilities[index]))
+			top_indices = np.argsort(probabilities)[-3:][::-1]
+			st.subheader("Probabilidades")
+			for index in top_indices:
+				st.write(f"{CLASS_NAMES[index]}: {probabilities[index]:.1%}")
+				st.progress(float(probabilities[index]))
+		except RuntimeError as error:
+			st.error(str(error))
 
 st.divider()
 st.subheader("Instrucciones")
