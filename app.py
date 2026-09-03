@@ -55,18 +55,24 @@ input_mode = st.radio("Origen de la imagen", ["Dibujar", "Subir imagen"], horizo
 image = None
 
 if input_mode == "Dibujar":
-	canvas_result = st_canvas(
-		fill_color="rgba(255, 255, 255, 1)",
-		stroke_width=12,
-		stroke_color="#FFFFFF",
-		background_color="#000000",
-		height=280,
-		width=280,
-		drawing_mode="freedraw",
-		key="clothing_canvas",
-	)
-	if canvas_result.image_data is not None:
-		image = Image.fromarray(canvas_result.image_data.astype("uint8"), mode="RGBA")
+	try:
+		canvas_result = st_canvas(
+			fill_color="rgba(255, 255, 255, 1)",
+			stroke_width=12,
+			stroke_color="#FFFFFF",
+			background_color="#000000",
+			height=280,
+			width=280,
+			drawing_mode="freedraw",
+			key="clothing_canvas",
+		)
+		if canvas_result.image_data is not None:
+			image = Image.fromarray(canvas_result.image_data.astype("uint8"), mode="RGBA")
+	except RuntimeError:
+		st.error(
+			"El canvas no está disponible en este despliegue. "
+			"Puedes cambiar a 'Subir imagen' para continuar."
+		)
 else:
 	uploaded_file = st.file_uploader(
 		"Selecciona una imagen",
