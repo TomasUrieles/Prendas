@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local data, models and secrets
+data/
+models/
+*.h5
+*.keras
+*.ckpt
+.env
+credentials.json
+
+# Google Colab / local metadata
+.config/
