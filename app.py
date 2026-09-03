@@ -1,4 +1,6 @@
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from zipfile import BadZipFile, ZipFile
 
 import numpy as np
 import streamlit as st
@@ -41,12 +43,17 @@ def load_model():
 				tf.keras.layers.Dense(10, activation="softmax"),
 			]
 		)
-		model.load_weights(MODEL_PATH)
+		with TemporaryDirectory() as temporary_directory:
+			with ZipFile(MODEL_PATH) as keras_archive:
+				weights_path = keras_archive.extract(
+					"model.weights.h5", temporary_directory
+				)
+			model.load_weights(weights_path)
 		return model
-	except (ValueError, TypeError) as error:
+	except (BadZipFile, KeyError, OSError, ValueError, TypeError) as error:
 		raise RuntimeError(
 			"No se pudieron cargar los pesos de prendas_model.keras. "
-			"Verifica que el archivo del modelo esté en el repositorio."
+			"Verifica que el archivo esté completo en el repositorio."
 		) from error
 
 
