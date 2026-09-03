@@ -30,7 +30,13 @@ MODEL_PATH = Path(__file__).with_name("prendas_model.keras")
 
 @st.cache_resource
 def load_model():
-	return tf.keras.models.load_model(MODEL_PATH, compile=False)
+	try:
+		return tf.keras.models.load_model(MODEL_PATH, compile=False)
+	except (ValueError, TypeError) as error:
+		raise RuntimeError(
+			"No se pudo cargar prendas_model.keras. "
+			"Verifica que Streamlit Cloud haya reinstalado las dependencias."
+		) from error
 
 
 def prepare_image(image: Image.Image) -> np.ndarray:
